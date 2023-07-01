@@ -2,22 +2,23 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getAllCharacters } from "../../../api/lib/character";
 import { CharacterData } from "../../../types";
-import { Grid, Typography, Input } from "@mui/material";
+import { Grid, Typography, Input, ButtonGroup, Button, Box } from "@mui/material";
 import Person4Icon from "@mui/icons-material/Person4";
 
 export const CharacterList = () => {
-  const [characters, setCharacters] = useState<Array<CharacterData>>();
-  const [search, setSearch] = useState<string>("");
+  const [ characters, setCharacters ] = useState<Array<CharacterData>>();
+  const [ search, setSearch ] = useState<string>("");
+  const [ page, setPage ] = useState<number>(1)
 
   useEffect(() => {
-    getAllCharacters()
+    getAllCharacters(`page=${page}`)
       .then((response) => {
         setCharacters(response.data);
       })
       .catch((error) => {
         console.error(error);
       });
-  }, []);
+  }, [page]);
   return (
     <>
       <Input
@@ -29,7 +30,12 @@ export const CharacterList = () => {
           console.log(e.target.value);
         }}
       />
-      <Grid container>
+      <Box
+        display={"flex"}
+        alignItems="center"
+        justifyContent="center"
+        sx={{flexWrap: "wrap"}}
+      >
         {characters
           ?.filter((item) => {
             return item.aliases[0].toLowerCase().includes(search.toLowerCase());
@@ -42,6 +48,9 @@ export const CharacterList = () => {
                 </Grid>
                 <Grid item sm={9} mt={5}>
                   <Typography variant="h6" component="h5">
+                    Name : {character.name ? character.name : "Not Mentioned"}
+                  </Typography>
+                  <Typography component="h6">
                     Aliases :{" "}
                     {character.aliases[0]
                       ? character.aliases[0]
@@ -58,7 +67,7 @@ export const CharacterList = () => {
                         character.url.lastIndexOf("/") + 1
                       )}
                     >
-                      <button className="block">
+                      <button>
                         <b>Voir la fiche</b>
                       </button>
                     </Link>
@@ -67,7 +76,26 @@ export const CharacterList = () => {
               </Grid>
             );
           })}
-      </Grid>
+      </Box>
+      <Box textAlign="center">
+        <ButtonGroup variant="text" aria-label="text button group">
+          <Button
+            disabled={page === 1}
+            onClick={() => {
+              setPage(page - 1);
+            }}
+          >
+            Previous
+          </Button>
+          <Button
+            onClick={() => {
+              setPage(page + 1);
+            }}
+          >
+            Next
+          </Button>
+        </ButtonGroup>
+      </Box>
     </>
   );
 };
